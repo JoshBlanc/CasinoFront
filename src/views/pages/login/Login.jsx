@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import { authService } from '../../../services/authService'
 import { Link } from 'react-router-dom'
 import {
   CButton,
@@ -12,11 +13,42 @@ import {
   CInputGroup,
   CInputGroupText,
   CRow,
+  CAlert,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
 
+import { useNavigate } from 'react-router-dom'
+
 const Login = () => {
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError('')
+      }, 3000) // 3 segundos
+
+      return () => clearTimeout(timer)
+    }
+  }, [error])
+
+  const handleLogin = async (e) => {
+    e.preventDefault()
+
+    try {
+      await authService.login(username, password)
+
+      navigate('/dashboard')
+    } catch (error) {
+      console.error(error.response?.data || error)
+      setError('Credenciales incorrectas')
+    }
+  }
+
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
@@ -25,6 +57,11 @@ const Login = () => {
             <CCardGroup>
               <CCard className="p-4">
                 <CCardBody>
+                  {error && (
+                    <CAlert color="danger" dismissible onClose={() => setError('')}>
+                      {error}
+                    </CAlert>
+                  )}
                   <CForm>
                     <h1>Login</h1>
                     <p className="text-body-secondary">Sign In to your account</p>
@@ -32,7 +69,12 @@ const Login = () => {
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
                       </CInputGroupText>
-                      <CFormInput placeholder="Username" autoComplete="username" />
+                      <CFormInput
+                        placeholder="Username"
+                        autoComplete="username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                      />
                     </CInputGroup>
                     <CInputGroup className="mb-4">
                       <CInputGroupText>
@@ -42,11 +84,13 @@ const Login = () => {
                         type="password"
                         placeholder="Password"
                         autoComplete="current-password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                       />
                     </CInputGroup>
                     <CRow>
                       <CCol xs={6}>
-                        <CButton color="primary" className="px-4">
+                        <CButton color="primary" className="px-4" onClick={handleLogin}>
                           Login
                         </CButton>
                       </CCol>
