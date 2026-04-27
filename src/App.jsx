@@ -6,7 +6,8 @@ import PrivateRoute from './components/ProtectedRoute'
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
 import './scss/examples.scss'
-
+import VerifyOtp from './views/pages/auth/VerifyOtp'
+import OtpRoute from './components/otpRoute'
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -44,13 +45,21 @@ const App = () => {
       >
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route 
-              path="/dashboard/*" 
-              element={
-                <PrivateRoute>
-                  <DefaultLayout />
-                </PrivateRoute>
-              } 
+          <Route
+            path="/verify-otp"
+            element={
+              <OtpRoute>
+                <VerifyOtp />
+              </OtpRoute>
+            }
+          />
+          <Route
+            path="/dashboard/*"
+            element={
+              <PrivateRoute>
+                <DefaultLayout />
+              </PrivateRoute>
+            }
           />
         </Routes>
       </Suspense>
