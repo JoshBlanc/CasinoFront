@@ -67,6 +67,13 @@ const Badges = React.lazy(() => import('./views/notifications/badges/Badges'))
 const Modals = React.lazy(() => import('./views/notifications/modals/Modals'))
 const Toasts = React.lazy(() => import('./views/notifications/toasts/Toasts'))
 
+
+//Proteinas
+
+const ProteinasPage = React.lazy(() =>import('./views/proteinas/ProteinasPage'))
+
+
+
 const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 
 /**
@@ -134,6 +141,7 @@ export const routes = [
   { path: '/notifications/modals', name: 'Modals', element: Modals },
   { path: '/notifications/toasts', name: 'Toasts', element: Toasts },
   { path: '/widgets', name: 'Widgets', element: Widgets },
+  { path: '/dashboard/proteinas', name: 'Proteinas', element: ProteinasPage }
 ]
 
 export default routes

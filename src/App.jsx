@@ -1,37 +1,37 @@
 import React, { Suspense, useEffect } from 'react'
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import PrivateRoute from './components/ProtectedRoute'
-
 import { CSpinner, useColorModes } from '@coreui/react'
+
 import './scss/style.scss'
 import './scss/examples.scss'
+
+// Auth pages
+import Login from './views/pages/login/Login'
 import VerifyOtp from './views/pages/auth/VerifyOtp'
 import OtpRoute from './components/otpRoute'
 
-// Containers
+// Layout
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 
-// Pages
-const Login = React.lazy(() => import('./views/pages/login/Login'))
-
 const App = () => {
-  const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
+  const { isColorModeSet, setColorMode } = useColorModes(
+    'coreui-free-react-admin-template-theme',
+  )
+
   const storedTheme = useSelector((state) => state.theme)
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.href.split('?')[1])
-    const theme = urlParams.get('theme') && urlParams.get('theme').match(/^[A-Za-z0-9\s]+/)[0]
+    const urlParams = new URLSearchParams(window.location.search)
+    const theme = urlParams.get('theme')
 
     if (theme) {
       setColorMode(theme)
     }
 
-    if (isColorModeSet()) {
-      return
+    if (!isColorModeSet()) {
+      setColorMode(storedTheme)
     }
-
-    setColorMode(storedTheme)
   }, [])
 
   return (
@@ -44,7 +44,10 @@ const App = () => {
         }
       >
         <Routes>
+
+          {/* AUTH */}
           <Route path="/login" element={<Login />} />
+
           <Route
             path="/verify-otp"
             element={
@@ -53,14 +56,10 @@ const App = () => {
               </OtpRoute>
             }
           />
-          <Route
-            path="/dashboard/*"
-            element={
-              <PrivateRoute>
-                <DefaultLayout />
-              </PrivateRoute>
-            }
-          />
+
+          {/* APP PRINCIPAL (TODO LO DEMÁS VA DENTRO DEL LAYOUT) */}
+          <Route path="/dashboard/*" element={<DefaultLayout />} />
+
         </Routes>
       </Suspense>
     </BrowserRouter>
