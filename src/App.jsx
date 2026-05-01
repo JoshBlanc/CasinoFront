@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { CSpinner, useColorModes } from '@coreui/react'
 
@@ -25,13 +25,8 @@ const App = () => {
     const urlParams = new URLSearchParams(window.location.search)
     const theme = urlParams.get('theme')
 
-    if (theme) {
-      setColorMode(theme)
-    }
-
-    if (!isColorModeSet()) {
-      setColorMode(storedTheme)
-    }
+    if (theme) setColorMode(theme)
+    if (!isColorModeSet()) setColorMode(storedTheme)
   }, [])
 
   return (
@@ -45,6 +40,9 @@ const App = () => {
       >
         <Routes>
 
+          {/* 🔥 REDIRECT INICIAL */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+
           {/* AUTH */}
           <Route path="/login" element={<Login />} />
 
@@ -57,7 +55,7 @@ const App = () => {
             }
           />
 
-          {/* APP PRINCIPAL (TODO LO DEMÁS VA DENTRO DEL LAYOUT) */}
+          {/* APP */}
           <Route path="/dashboard/*" element={<DefaultLayout />} />
 
         </Routes>

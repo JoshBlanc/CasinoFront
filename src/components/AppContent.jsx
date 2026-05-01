@@ -28,7 +28,7 @@ const AppContent = () => {
           })}
 
           {/* ruta por defecto dentro del layout */}
-          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route index element={<Navigate to="" replace />} />
 
         </Routes>
       </Suspense>
