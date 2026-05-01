@@ -1,140 +1,137 @@
-import React, { useEffect, useState } from 'react'
-import ProteinaList from './ProteinaList'
-import { getProteinas, createProteina } from '../../services/proteinasService'
-import { CToast, CToastBody, CToastHeader, CToaster } from '@coreui/react'
+import React, { useEffect, useState } from "react";
+import ProteinaList from "./ProteinaList";
+import ProteinaModal from "./ProteinaModal";
+
+import {
+  getProteinas,
+  createProteina,
+  updateProteina,
+  deleteProteina,
+} from "../../services/proteinasService";
+
+import {
+  CToast,
+  CToastBody,
+  CToastHeader,
+  CToaster,
+} from "@coreui/react";
 
 const ProteinasPage = () => {
-  const [toasts, setToasts] = useState([])
+  const [proteinas, setProteinas] = useState([]);
 
-  const [toastMsg, setToastMsg] = useState('')
-
-  const [proteinas, setProteinas] = useState([])
-
-  const [showCreate, setShowCreate] = useState(false)
+  const [showModal, setShowModal] = useState(false);
+  const [mode, setMode] = useState("create");
+  const [selected, setSelected] = useState(null);
 
   const [form, setForm] = useState({
-    nombre: '',
-    descripcion: '',
-  })
+    nombre: "",
+    descripcion: "",
+  });
 
-  const showToast = (message) => {
+  const [toasts, setToasts] = useState([]);
+
+  const showToast = (message, type = "success") => {
     setToasts([
       ...toasts,
-      {
-        id: Date.now(),
-        message,
-      },
-    ])
-  }
+      { id: Date.now(), message, type },
+    ]);
+  };
 
-  // 🔥 CARGAR LISTA
   const loadProteinas = async () => {
-    try {
-      const res = await getProteinas()
-      setProteinas(res.data || [])
-    } catch (error) {
-      console.error('Error GET:', error)
-    }
-  }
+    const res = await getProteinas();
+    setProteinas(res.data || []);
+  };
 
   useEffect(() => {
-    loadProteinas()
-  }, [])
+    loadProteinas();
+  }, []);
 
-  // INPUTS
-  const handleChange = (e) => {
+  // 🔹 CREATE
+  const handleCreate = () => {
+    setMode("create");
+    setForm({ nombre: "", descripcion: "" });
+    setShowModal(true);
+  };
+
+  // 🔹 EDIT
+  const handleEdit = (p) => {
+    setMode("edit");
+    setSelected(p);
     setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    })
-  }
+      nombre: p.nombre,
+      descripcion: p.descripcion,
+    });
+    setShowModal(true);
+  };
 
-  // 🔥 POST REAL
+  // 🔹 SAVE
   const handleSave = async () => {
     try {
-      await createProteina(form)
+      if (mode === "create") {
+        await createProteina(form);
+        showToast("Creado correctamente", "success");
+      } else {
+        await updateProteina(selected.id, form);
+        showToast("Actualizado correctamente", "info");
+      }
 
-      // cerrar modal
-      setShowCreate(false)
-
-      // limpiar form
-      setForm({ nombre: '', descripcion: '' })
-
-      // recargar tabla
-      loadProteinas()
-      //Mensaje de creacion
-      showToast('Proteína creada correctamente')
-    } catch (error) {
-      console.error('Error POST:', error)
+      setShowModal(false);
+      loadProteinas();
+    } catch {
+      showToast("Error", "danger");
     }
-  }
+  };
+
+  // 🔹 DELETE
+  const handleDelete = async (id) => {
+    if (!window.confirm("¿Eliminar proteína?")) return;
+
+    try {
+      await deleteProteina(id);
+      showToast("Eliminado", "danger");
+      loadProteinas();
+    } catch {
+      showToast("Error al eliminar", "danger");
+    }
+  };
 
   return (
     <div className="p-3">
-      <ProteinaList proteinas={proteinas} onAdd={() => setShowCreate(true)} />
 
-      {/* MODAL CREAR */}
-      {showCreate && (
-        <div className="modal d-block bg-dark bg-opacity-50">
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5>Crear proteína</h5>
-                <button className="btn-close" onClick={() => setShowCreate(false)} />
-              </div>
+      <ProteinaList
+        proteinas={proteinas}
+        onAdd={handleCreate}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
 
-              <div className="modal-body">
-                <div className="mb-3">
-                  <label>Nombre</label>
-                  <input
-                    className="form-control"
-                    name="nombre"
-                    value={form.nombre}
-                    onChange={handleChange}
-                  />
-                </div>
+      <ProteinaModal
+        visible={showModal}
+        onClose={() => setShowModal(false)}
+        onSave={handleSave}
+        form={form}
+        setForm={setForm}
+        mode={mode}
+      />
 
-                <div className="mb-3">
-                  <label>Descripción</label>
-                  <textarea
-                    className="form-control"
-                    name="descripcion"
-                    value={form.descripcion}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => setShowCreate(false)}>
-                  Cancelar
-                </button>
-
-                <button className="btn btn-success" onClick={handleSave}>
-                  Guardar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* TOAST */}
       <CToaster placement="top-end">
-        {toasts.map((toast) => (
+        {toasts.map((t) => (
           <CToast
-            key={toast.id}
+            key={t.id}
+            visible
             autohide
             delay={3000}
-            visible
-            onClose={() => setToasts(toasts.filter((t) => t.id !== toast.id))}
+            color={t.type}
           >
             <CToastHeader closeButton>Notificación</CToastHeader>
-
-            <CToastBody>{toast.message}</CToastBody>
+            <CToastBody>{t.message}</CToastBody>
           </CToast>
         ))}
       </CToaster>
-    </div>
-  )
-}
 
-export default ProteinasPage
+    </div>
+  );
+};
+
+export default ProteinasPage;
